@@ -1,9 +1,10 @@
 use crate::{Lang, Script};
+use serde::{Deserialize, Serialize};
 
 const RELIABLE_CONFIDENCE_THRESHOLD: f64 = 0.9;
 
 /// Represents a full outcome of language detection.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Info {
     script: Script,
     lang: Lang,

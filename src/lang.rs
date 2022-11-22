@@ -5,12 +5,14 @@
 use std::fmt;
 use std::str::FromStr;
 
+use serde::{Serialize, Deserialize};
+
 use crate::error::ParseError;
 
 /// Represents a language following [ISO 639-3](https://en.wikipedia.org/wiki/ISO_639-3) standard.
 #[cfg_attr(feature = "enum-map", derive(::enum_map::Enum))]
 #[cfg_attr(feature = "arbitrary", derive(::arbitrary::Arbitrary))]
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Serialize, Deserialize)]
 pub enum Lang {
     /// Esperanto (Esperanto)
     Epo = 0,
