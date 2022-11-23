@@ -1,5 +1,5 @@
 create table classifications (
 	lang text,
 	script text,
-	confidence real,
+	confidence real
 );
