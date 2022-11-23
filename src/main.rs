@@ -1,3 +1,5 @@
+use std::{env, str::FromStr};
+
 use actix_web::{
     get, guard, post,
     web::{self, Data},
@@ -6,7 +8,12 @@ use actix_web::{
 use async_graphql::{http::GraphiQLSource, EmptySubscription, Object, Schema, SimpleObject};
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 use clap::{Parser, Subcommand};
-use whatlang::detect;
+use log::error;
+use sqlx::{
+    sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteQueryResult},
+    ConnectOptions, Connection, SqliteConnection, SqlitePool,
+};
+use whatlang::{detect, Info};
 
 #[derive(Debug, Subcommand)]
 enum Commands {
@@ -82,12 +89,35 @@ struct MutationRoot;
 impl MutationRoot {
     async fn detect(&self, text: String) -> DetectResult {
         let info = detect(&text).expect("Should be able to detect");
+        let result = write_info(&info).await;
+        if let Err(err) = result {
+            error!("Failed to write classification row: {}", err);
+        }
         DetectResult {
             lang: info.lang().eng_name().to_owned(),
             script: info.script().name().to_owned(),
             confidence: info.confidence(),
         }
     }
+}
+
+async fn write_info(info: &Info) -> sqlx::Result<SqliteQueryResult> {
+    let pool =
+        SqlitePool::connect(&env::var("DATABASE_URL").expect("DATABASE_URL should be set")).await?;
+    let lang_name = info.lang().eng_name();
+    let script = info.script();
+    let script_name = script.name();
+    let confidence = info.confidence();
+    sqlx::query_unchecked!(
+        r#"
+        insert into classifications values ($1, $2, $3);
+        "#,
+        lang_name,
+        script_name,
+        confidence,
+    )
+    .execute(&pool)
+    .await
 }
 
 #[actix_web::main]
