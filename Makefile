@@ -15,6 +15,8 @@ test:
 test-fuzz:
 	ARBTEST_BUDGET_MS=6000000 cargo test --all-features --release
 build:
+	cargo build --timings
+build-static:
 	DATABASE_URL=sqlite:db \
 	TARGET_CC=x86_64-linux-musl-gcc \
 	OPENSSL_DIR=/usr/local/opt/openssl@3 \
