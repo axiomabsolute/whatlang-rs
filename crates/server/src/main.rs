@@ -1,4 +1,4 @@
-use std::{env, str::FromStr};
+use std::env;
 
 use actix_web::{
     get, guard, post,
@@ -7,21 +7,13 @@ use actix_web::{
 };
 use async_graphql::{http::GraphiQLSource, EmptySubscription, Object, Schema, SimpleObject};
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
-use clap::{Parser, Subcommand};
+use clap::{command, Parser, Subcommand};
 use log::error;
-use sqlx::{
-    sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteQueryResult},
-    ConnectOptions, Connection, SqliteConnection, SqlitePool,
-};
+use sqlx::{sqlite::SqliteQueryResult, SqlitePool};
 use whatlang::{detect, Info};
 
 #[derive(Debug, Subcommand)]
 enum Commands {
-    #[command(arg_required_else_help = true)]
-    Detect {
-        /// The text to classify
-        text: String,
-    },
     #[command(arg_required_else_help = true)]
     Serve {
         /// Path to the SQLite DB to save stats to
@@ -126,13 +118,6 @@ async fn main() -> std::io::Result<()> {
     let args = Cli::parse();
 
     match args.command {
-        Commands::Detect { text } => {
-            let info = detect(&text).expect("Should be able to detect.");
-            let serialized =
-                serde_json::to_string(&info).expect("Should be able to serialie result as JSON.");
-            println!("{}", serialized);
-            Ok(())
-        }
         Commands::Serve { path, port } => {
             println!("Serve :{}, stats to {}", port, path);
             HttpServer::new(|| {
