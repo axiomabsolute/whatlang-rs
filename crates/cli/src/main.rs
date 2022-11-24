@@ -1,5 +1,5 @@
-use clap::{Subcommand, command, Parser};
-use whatlang::{detect};
+use clap::{command, Parser, Subcommand};
+use whatlang::detect;
 
 #[derive(Debug, Subcommand)]
 enum Commands {
